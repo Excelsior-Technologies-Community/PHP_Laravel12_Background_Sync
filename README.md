@@ -67,7 +67,8 @@ Explanation:
 ```php
 ⦁ This command creates a Job class used for executing tasks in the background.
 ⦁ The job runs asynchronously using Laravel Queue without blocking user requests.
-⦁ It is ideal for handling time-consuming operations like data synchronization, API calls, or heavy processing.
+⦁ It is ideal for handling time-consuming operations like data
+ synchronization, API calls, or heavy processing.
 ⦁ The generated job file is stored in the app/Jobs directory.
 ```
 File Path:
