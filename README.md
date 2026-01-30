@@ -1,59 +1,230 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PHP_Laravel12_Background_Sync
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Step 1: Install Fresh Laravel 12 Application
 
-## About Laravel
+Open Terminal / Command Prompt and run:
+```php
+    composer create-project laravel/laravel:^12.0 PHP_Laravel12_Background_Sync
+```
+Move into the project folder:
+```php
+      cd PHP_Laravel12_Background_Sync
+```
+Generate application key:
+```php
+        php artisan key:generate
+```
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Step 2: Configure Database (.env)
+Open .env file and update database settings:
+```php
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3307
+DB_DATABASE=laravel12_background_sync
+DB_USERNAME=root
+DB_PASSWORD=
+```
+Run database migration:
+```php
+php artisan migrate
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# Step 3: Understand Laravel 12 Background Sync Structure
+Laravel 12 handles background synchronization using Scheduler + Command + Job + Queue + Service architecture.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Main Components:
+```php
+⦁ Scheduler – decides when sync runs
+⦁ Command – triggers background job
+⦁ Job – runs process in background
+⦁ Queue – stores background jobs
+⦁ Service – contains actual synchronization logic
+```
 
-## Learning Laravel
+Flow:
+```php
+Scheduler → Command → Job → Queue → Worker → Sync Logic
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+# Step 4: Configure Queue System
+Open .env file and set queue driver:
+```php
+QUEUE_CONNECTION=database
+```
+Create queue table:
+```php
+       php artisan queue:table
+       php artisan migrate
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Step 5: Create Background Sync Job
+Generate a job class:
+```php
+                php artisan make:job BackgroundSyncJob
+```
+File Path:
+```php
+              app/Jobs/BackgroundSyncJob.php
+```
+```php
+<?php
 
-## Laravel Sponsors
+namespace App\Jobs;
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-### Premium Partners
+class BackgroundSyncJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    public function handle(): void
+    {
+        // Example: background sync logic
+        Log::info('Background Sync Started');
 
-## Contributing
+        sleep(5); // simulate heavy task
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+        Log::info('Background Sync Completed');
+    }
+}
 
-## Code of Conduct
+```
+⦁ This job will run synchronization in background.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Step 6: Create Artisan Command for Sync
+Generate custom command:
+```php
+          php artisan make:command BackgroundSyncCommand
+```
+File Path:
+```php
+app/Console/Commands/BackgroundSyncCommand.php
+```
+```php
+<?php
 
-## Security Vulnerabilities
+namespace App\Console\Commands;
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+use Illuminate\Console\Command;
 
-## License
+class BackgroundSyncCommand extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:background-sync-command';
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
+  public function handle()
+{
+    \App\Jobs\BackgroundSyncJob::dispatch();
+}
+}
+```
+This command dispatches the background job.
+
+# Step 7: Configure Scheduler
+⦁ Laravel 12 does not use Console/Kernel.php for scheduling.
+Open File:
+```php
+      routes/console.php
+```
+Add scheduler entry:
+```php
+ Schedule::command('background:sync')->everyMinute();
+```
+⦁ This schedules the background sync automatically.
+
+# Step 8: Run Queue Worker
+⦁ Background jobs require a queue worker.
+Open terminal and run:
+```php
+           php artisan queue:work
+```
+⦁ Keep this terminal running.
+
+# Step 9: Run Scheduler
+Open a new terminal window and run:
+```php
+      php artisan schedule:work
+```
+⦁ This executes scheduled background sync tasks.
+
+# Step 10: Manual Sync Test
+Run command manually:
+```php
+     php artisan background:sync
+```
+Check logs:
+```php
+    storage/logs/laravel.log
+```
+
+# Step 11: Run Laravel 12 Project
+Start server:
+```php
+       php artisan serve
+```
+Open browser:
+```php
+  http://127.0.0.1:8000
+```
+<img width="692" height="372" alt="image" src="https://github.com/user-attachments/assets/3cd297ca-34ed-43b1-a3f9-0df202f56614" />
+
+# Explenation :
+```php
+⦁ This response confirms that the background sync has started successfully.
+⦁ The request returns immediately without waiting for the sync to finish.
+⦁ The synchronization runs asynchronously in the background using Laravel Queue.
+```
+
+# Project Folder Structure:
+```php
+PHP_Laravel12_Background_Sync
+├── app/
+│   ├── Jobs/
+│   │   └── BackgroundSyncJob.php
+│   │
+│   ├── Console/
+│   │   └── Commands/
+│   │       └── BackgroundSyncCommand.php
+│   │
+│   ├── Services/
+│   │   └── BackgroundSyncService.php
+│
+├── routes/
+│   ├── web.php
+│   └── console.php
+│
+├── database/
+│   └── migrations/
+│       └── *_create_jobs_table.php
+│
+├── storage/
+│   └── logs/
+│       └── laravel.log
+│
+├── .env
+│
+└── artisan
+```
+
+
+
