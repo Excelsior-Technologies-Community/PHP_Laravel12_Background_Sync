@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Jobs\BackgroundSyncJob;
 
 class BackgroundSyncCommand extends Command
 {
@@ -11,20 +12,22 @@ class BackgroundSyncCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:background-sync-command';
+    protected $signature = 'background:sync';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Run Background Synchronization';
 
     /**
      * Execute the console command.
      */
-  public function handle()
-{
-    \App\Jobs\BackgroundSyncJob::dispatch();
-}
+    public function handle()
+    {
+        BackgroundSyncJob::dispatch();
+
+        $this->info('Background Sync Job Dispatched Successfully');
+    }
 }
