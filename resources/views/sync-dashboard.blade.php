@@ -2,212 +2,316 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Background Sync Dashboard</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .card {
+            border-radius: 15px;
+        }
+
+        .stats-card {
+            transition: 0.3s;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 
-<body class="bg-light">
+<body>
 
     <div class="container py-5">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="dashboard-header shadow-sm">
 
-            <h2>Background Sync Dashboard</h2>
+            <div class="d-flex justify-content-between align-items-center">
 
-            <a href="/start-sync" class="btn btn-primary">
-                Run Sync
-            </a>
+                <h2 class="fw-bold mb-0">
+                    🚀 Background Sync Dashboard
+                </h2>
+
+                <a href="/start-sync" class="btn btn-primary">
+                    Run Sync
+                </a>
+
+            </div>
 
         </div>
 
-        <!-- Statistics -->
+        {{-- Success Message --}}
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
 
+            {{ session('success') }}
+
+            <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"></button>
+
+        </div>
+        @endif
+
+        {{-- Statistics --}}
         <div class="row mb-4">
 
-            <div class="col-md-3">
-
-                <div class="card shadow-sm border-0">
-
-                    <div class="card-body">
-
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 stats-card">
+                    <div class="card-body text-center">
                         <h6>Total Syncs</h6>
-
-                        <h3>{{ $totalSyncs }}</h3>
-
+                        <h2>{{ $totalSyncs }}</h2>
                     </div>
-
                 </div>
-
             </div>
 
-            <div class="col-md-3">
-
-                <div class="card shadow-sm border-0">
-
-                    <div class="card-body">
-
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 stats-card">
+                    <div class="card-body text-center">
                         <h6>Completed</h6>
-
-                        <h3>{{ $completedSyncs }}</h3>
-
+                        <h2 class="text-success">
+                            {{ $completedSyncs }}
+                        </h2>
                     </div>
-
                 </div>
-
             </div>
 
-            <div class="col-md-3">
-
-                <div class="card shadow-sm border-0">
-
-                    <div class="card-body">
-
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 stats-card">
+                    <div class="card-body text-center">
                         <h6>Failed</h6>
-
-                        <h3>{{ $failedSyncs }}</h3>
-
+                        <h2 class="text-danger">
+                            {{ $failedSyncs }}
+                        </h2>
                     </div>
-
                 </div>
-
             </div>
 
-            <div class="col-md-3">
-
-                <div class="card shadow-sm border-0">
-
-                    <div class="card-body">
-
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 stats-card">
+                    <div class="card-body text-center">
                         <h6>Running</h6>
+                        <h2 class="text-warning">
+                            {{ $runningSyncs }}
+                        </h2>
+                    </div>
+                </div>
+            </div>
 
-                        <h3>{{ $runningSyncs }}</h3>
+        </div>
+
+        {{-- Search & Filter --}}
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <form method="GET" action="/sync-dashboard">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-5">
+
+                            <input
+                                type="text"
+                                name="search"
+                                class="form-control"
+                                placeholder="Search status or message..."
+                                value="{{ request('search') }}">
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <select name="status" class="form-select">
+
+                                <option value="">
+                                    All Status
+                                </option>
+
+                                <option value="Completed"
+                                    {{ request('status') == 'Completed' ? 'selected' : '' }}>
+                                    Completed
+                                </option>
+
+                                <option value="Failed"
+                                    {{ request('status') == 'Failed' ? 'selected' : '' }}>
+                                    Failed
+                                </option>
+
+                                <option value="Running"
+                                    {{ request('status') == 'Running' ? 'selected' : '' }}>
+                                    Running
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                            <button class="btn btn-success w-100">
+                                Search / Filter
+                            </button>
+
+                        </div>
 
                     </div>
 
-                </div>
+                </form>
 
             </div>
 
         </div>
 
-        <!-- Table -->
-
+        {{-- Table --}}
         <div class="card shadow-sm border-0">
 
             <div class="card-body">
 
-                <table class="table table-bordered align-middle">
+                <div class="table-responsive">
 
-                    <thead class="table-dark">
+                    <table class="table table-bordered table-hover align-middle">
 
-                        <tr>
+                        <thead class="table-dark">
 
-                            <th>ID</th>
+                            <tr>
 
-                            <th>Status</th>
+                                <th>ID</th>
+                                <th>Status</th>
+                                <th>Started At</th>
+                                <th>Completed At</th>
+                                <th>Duration</th>
+                                <th>Message</th>
+                                <th width="120">Action</th>
 
-                            <th>Started At</th>
+                            </tr>
 
-                            <th>Completed At</th>
+                        </thead>
 
-                            <th>Duration</th>
+                        <tbody>
 
-                            <th>Message</th>
+                            @forelse($histories as $history)
 
-                        </tr>
+                            <tr>
 
-                    </thead>
+                                <td>{{ $history->id }}</td>
 
-                    <tbody>
+                                <td>
 
-                        @forelse($histories as $history)
+                                    @if($history->status == 'Completed')
 
-                        <tr>
+                                    <span class="badge bg-success">
+                                        Completed
+                                    </span>
 
-                            <td>{{ $history->id }}</td>
+                                    @elseif($history->status == 'Failed')
 
-                            <td>
+                                    <span class="badge bg-danger">
+                                        Failed
+                                    </span>
 
-                                @if($history->status == 'Completed')
+                                    @else
 
-                                <span class="badge bg-success">
-                                    Completed
-                                </span>
+                                    <span class="badge bg-warning text-dark">
+                                        Running
+                                    </span>
 
-                                @elseif($history->status == 'Failed')
+                                    @endif
 
-                                <span class="badge bg-danger">
-                                    Failed
-                                </span>
+                                </td>
 
-                                @else
+                                <td>
+                                    {{ $history->started_at }}
+                                </td>
 
-                                <span class="badge bg-warning text-dark">
-                                    Running
-                                </span>
+                                <td>
+                                    {{ $history->completed_at }}
+                                </td>
 
-                                @endif
+                                <td>
 
-                            </td>
+                                    @if($history->duration)
 
-                            <td>
-                                {{ $history->started_at }}
-                            </td>
+                                    {{ $history->duration }} sec
 
-                            <td>
-                                {{ $history->completed_at }}
-                            </td>
+                                    @else
 
-                            <td>
+                                    --
 
-                                @if($history->duration)
+                                    @endif
 
-                                {{ $history->duration }} sec
+                                </td>
 
-                                @else
+                                <td>
+                                    {{ $history->message }}
+                                </td>
 
-                                --
+                                <td>
 
-                                @endif
+                                    <form
+                                        action="{{ route('sync.destroy',$history->id) }}"
+                                        method="POST">
 
-                            </td>
+                                        @csrf
+                                        @method('DELETE')
 
-                            <td>
-                                {{ $history->message }}
-                            </td>
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Delete this record?')">
 
-                        </tr>
+                                            Delete
 
-                        @empty
+                                        </button>
 
-                        <tr>
+                                    </form>
 
-                            <td colspan="6" class="text-center">
+                                </td>
 
-                                No Sync Records Found
+                            </tr>
 
-                            </td>
+                            @empty
 
-                        </tr>
+                            <tr>
 
-                        @endforelse
+                                <td colspan="7" class="text-center">
 
-                    </tbody>
+                                    No Sync Records Found
 
-                </table>
+                                </td>
 
-                <!-- Right Side Pagination -->
+                            </tr>
 
-                <div class="d-flex justify-content-end mt-4">
+                            @endforelse
 
-                    {{ $histories->onEachSide(1)->links('pagination::bootstrap-5') }}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+
+                    {{ $histories->withQueryString()->links('pagination::bootstrap-5') }}
 
                 </div>
 
@@ -216,6 +320,8 @@
         </div>
 
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

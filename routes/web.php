@@ -12,8 +12,13 @@ Route::get('/', function () {
  */
 Route::get('/start-sync', [SyncController::class, 'startSync']);
 
-
 /**
  * Sync Dashboard
  */
 Route::get('/sync-dashboard', [SyncController::class, 'dashboard']);
+
+/**
+ * Delete Sync History
+ */
+Route::delete('/sync-history/{id}', [SyncController::class, 'destroy'])
+    ->name('sync.destroy');
